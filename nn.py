@@ -218,7 +218,13 @@ class Linear(FunctionNode):
     def _backward(gradient, *inputs):
         assert gradient.shape[0] == inputs[0].shape[0]
         assert gradient.shape[1] == inputs[1].shape[1]
-        "*** YOUR CODE HERE (Q2) ***"
+        #print(gradient)
+        #print(inputs)
+        
+
+        return (np.dot(gradient,  inputs[1].T), np.dot(inputs[0].T,gradient))
+
+
 
 class ReLU(FunctionNode):
     """
@@ -247,7 +253,10 @@ class ReLU(FunctionNode):
         - np.where: https://numpy.org/doc/stable/reference/generated/numpy.where.html
         """
         assert gradient.shape == inputs[0].shape
-        "*** YOUR CODE HERE (Q3) ***"
+        #print(gradient)
+        #print(inputs)
+
+        return (gradient * np.heaviside(inputs[0],0))
 
 class SquareLoss(FunctionNode):
     """
@@ -278,7 +287,8 @@ class SquareLoss(FunctionNode):
     @staticmethod
     def _backward(gradient, *inputs):
         assert np.asarray(gradient).ndim == 0
-        "*** YOUR CODE HERE (Q4) ***"
+        size = inputs[0].shape[0] * inputs[0].shape[1]
+        return (gradient * (inputs[0] - inputs[1])/size, gradient * (inputs[1] - inputs[0])/size)
 
 class SoftmaxLoss(FunctionNode):
     """
