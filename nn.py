@@ -345,7 +345,10 @@ class SoftmaxLoss(FunctionNode):
     def _backward(gradient, *inputs):
         assert np.asarray(gradient).ndim == 0
         log_probs = SoftmaxLoss.log_softmax(inputs[0])  # may be helpful
-        "*** YOUR CODE HERE (Q5) ***"
+        x_prob = (np.exp(log_probs) - inputs[1])
+        #return (np.dot(gradient,x_prob) - 1, -1 * np.dot(gradient,log_probs))
+        size = inputs[0].shape[0] # this is the batch size
+        return (gradient * x_prob/size,gradient * -1 * log_probs/size)
 
 def gradients(loss, parameters):
     """

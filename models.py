@@ -64,8 +64,11 @@ class RegressionModel(object):
     """
     def __init__(self):
         # Initialize your model parameters here
-        "*** YOUR CODE HERE ***"
-
+        self.hiddenSize = 1
+        self.m = nn.Parameter(1,self.hiddenSize)
+        self.b = nn.Parameter(1,self.hiddenSize)
+        self.learn = 0.05
+        
     def run(self, x):
         """
         Runs the model for a batch of examples.
@@ -75,7 +78,14 @@ class RegressionModel(object):
         Returns:
             A node with shape (batch_size x 1) containing predicted y-values
         """
-        "*** YOUR CODE HERE ***"
+        xm = nn.Linear(x,self.m)
+        predict = nn.AddBias(xm,self.b)
+        hidden = nn.ReLU(predict)
+        #new = nn.Linear(predict, hidden.T)
+        #print(new)
+        xm2 = nn.Linear(hidden,self.m)
+        final = nn.AddBias(xm,self.b)
+        return final
 
     def get_loss(self, x, y):
         """
@@ -87,14 +97,27 @@ class RegressionModel(object):
                 to be used for training
         Returns: a loss node
         """
-        "*** YOUR CODE HERE ***"
+
+        predicted_y = self.run(x)
+
+        loss = nn.SquareLoss(predicted_y, y)
+
+        return loss
 
     def train(self, dataset):
         """
         Trains the model.
         """
-        "*** YOUR CODE HERE ***"
-
+        loss = 10.0
+        batch_size = 200
+        while loss > 0.02:
+            for x,y in dataset.iterate_once(batch_size):
+                lossNode = self.get_loss(x, y)
+                loss = nn.as_scalar(lossNode)
+                grad_wrt_m, grad_wrt_b = nn.gradients(lossNode, [self.m, self.b])
+                self.m.update(grad_wrt_m, self.learn)
+                self.b.update(grad_wrt_b, self.learn)
+                    
 class DigitClassificationModel(object):
     """
     A model for handwritten digit classification using the MNIST dataset.
@@ -111,7 +134,10 @@ class DigitClassificationModel(object):
     """
     def __init__(self):
         # Initialize your model parameters here
-        "*** YOUR CODE HERE ***"
+        self.hiddenSize = 784
+        self.m = nn.Parameter(784,self.hiddenSize)
+        self.b = nn.Parameter(784,self.hiddenSize)
+        self.learn = 0.5
 
     def run(self, x):
         """
@@ -127,7 +153,12 @@ class DigitClassificationModel(object):
             A node with shape (batch_size x 10) containing predicted scores
                 (also called logits)
         """
-        "*** YOUR CODE HERE ***"
+        xm = nn.Linear(x,self.m)
+        predict = nn.AddBias(xm,self.b)
+        hidden = nn.ReLU(predict)
+        xm2 = nn.Linear(hidden,self.m)
+        final = nn.AddBias(xm,self.b)
+        return final
 
     def get_loss(self, x, y):
         """
@@ -142,13 +173,25 @@ class DigitClassificationModel(object):
             y: a node with shape (batch_size x 10)
         Returns: a loss node
         """
-        "*** YOUR CODE HERE ***"
+        predicted_y = self.run(x)
+
+        loss = nn.SquareLoss(predicted_y, y)
+
+        return loss
 
     def train(self, dataset):
         """
         Trains the model.
         """
-        "*** YOUR CODE HERE ***"
+        loss = 10.0
+        batch_size = 100
+        while dataset.get_validation_accuracy() < 0.97:
+            for x,y in dataset.iterate_once(batch_size):
+                lossNode = self.get_loss(x, y)
+                loss = nn.as_scalar(lossNode)
+                grad_wrt_m, grad_wrt_b = nn.gradients(lossNode, [self.m, self.b])
+                self.m.update(grad_wrt_m, self.learn)
+                self.b.update(grad_wrt_b, self.learn)
 
 class LanguageIDModel(object):
     """
